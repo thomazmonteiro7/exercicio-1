@@ -1,0 +1,89 @@
+import java.util.Scanner;
+
+public class AtaqueOTP {
+
+    public static byte[] hexParaBytes(String hex) {
+
+        hex = hex.replaceAll("\\s+", "");
+
+        byte[] resultado = new byte[hex.length() / 2];
+
+        for (int i = 0; i < resultado.length; i++) {
+
+            int valor = Integer.parseInt(
+                    hex.substring(i * 2, i * 2 + 2),
+                    16
+            );
+
+            resultado[i] = (byte) valor;
+        }
+
+        return resultado;
+    }
+
+    public static byte[] xor(byte[] a, byte[] b) {
+
+        int tamanho = Math.min(a.length, b.length);
+
+        byte[] resultado = new byte[tamanho];
+
+        for (int i = 0; i < tamanho; i++) {
+            resultado[i] = (byte) (a[i] ^ b[i]);
+        }
+
+        return resultado;
+    }
+
+    public static String bytesParaHex(byte[] dados) {
+
+        StringBuilder resultado = new StringBuilder();
+
+        for (byte b : dados) {
+            resultado.append(String.format("%02x", b));
+        }
+
+        return resultado.toString();
+    }
+
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        byte[][] mensagens = new byte[7][];
+
+        System.out.println("=== ATAQUE OTP ===");
+        System.out.println(
+                "Digite os 7 textos cifrados em hexadecimal."
+        );
+
+        for (int i = 0; i < 7; i++) {
+
+            System.out.print(
+                    "Mensagem cifrada " + (i + 1) + ": "
+            );
+
+            mensagens[i] =
+                    hexParaBytes(scanner.nextLine());
+        }
+
+        System.out.println("\n=== XOR ENTRE AS MENSAGENS ===");
+
+        for (int i = 0; i < 7; i++) {
+
+            for (int j = i + 1; j < 7; j++) {
+
+                byte[] resultado =
+                        xor(mensagens[i], mensagens[j]);
+
+                System.out.println(
+                        "C" + (i + 1) +
+                        " XOR C" + (j + 1) +
+                        " = " +
+                        bytesParaHex(resultado)
+                );
+            }
+        }
+
+        scanner.close();
+    }
+}
