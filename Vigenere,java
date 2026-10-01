@@ -1,91 +1,46 @@
-import java.util.Scanner;
+import java.util.*;
 
 public class AtaqueVigenere {
 
-    public static String descobrirChaveParcial(
-            String cifrado,
-            String palavra,
-            int posicao) {
+    public static byte[] hexToBytes(String hex) {
 
-        StringBuilder chave = new StringBuilder();
+        byte[] bytes = new byte[hex.length() / 2];
 
-        for (int i = 0; i < palavra.length(); i++) {
-
-            char c = cifrado.charAt(posicao + i);
-            char p = palavra.charAt(i);
-
-            if (c < 'a' || c > 'z') {
-                return null;
-            }
-
-            int valorC = c - 'a';
-            int valorP = p - 'a';
-
-            int valorK = (valorC - valorP + 26) % 26;
-
-            chave.append((char) ('a' + valorK));
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Integer.parseInt(
+                    hex.substring(i * 2, i * 2 + 2),
+                    16
+            );
         }
 
-        return chave.toString();
+        return bytes;
     }
 
-    public static String decifrar(String texto, String chave) {
+    public static String decifrar(byte[] cifrado, String chave) {
 
-        StringBuilder resultado = new StringBuilder();
+        byte[] resultado = new byte[cifrado.length];
 
-        int posicaoChave = 0;
+        for (int i = 0; i < cifrado.length; i++) {
 
-        for (int i = 0; i < texto.length(); i++) {
-
-            char c = texto.charAt(i);
-
-            if (c >= 'a' && c <= 'z') {
-
-                int valorC = c - 'a';
-                int valorK =
-                        chave.charAt(posicaoChave % chave.length()) - 'a';
-
-                int valorP = (valorC - valorK + 26) % 26;
-
-                resultado.append((char) ('a' + valorP));
-
-                posicaoChave++;
-
-            } else {
-                resultado.append(c);
-            }
+            resultado[i] =
+                    (byte) (cifrado[i] ^
+                    chave.charAt(i % chave.length()));
         }
 
-        return resultado.toString();
+        return new String(resultado);
     }
 
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
+        String cifrado = "COLE_AQUI_O_TEXTO_CIFRADO";
 
-        System.out.print("Digite o texto cifrado: ");
-        String cifrado = scanner.nextLine().toLowerCase();
+        String chave =
+                "ogatomorderaroupadapresidentaderomaedarainharaimunda";
 
-        String palavra = "seguranca";
+        byte[] bytes = hexToBytes(cifrado);
 
-        System.out.println("\nPossiveis chaves encontradas:");
+        String texto = decifrar(bytes, chave);
 
-        for (int posicao = 0;
-             posicao <= cifrado.length() - palavra.length();
-             posicao++) {
-
-            String chaveParcial =
-                    descobrirChaveParcial(cifrado, palavra, posicao);
-
-            if (chaveParcial != null) {
-
-                System.out.println(
-                    "Posicao " + posicao +
-                    " -> " + chaveParcial
-                );
-            }
-        }
-
-        scanner.close();
+        System.out.println(texto);
     }
 }
