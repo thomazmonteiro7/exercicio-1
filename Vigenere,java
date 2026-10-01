@@ -1,0 +1,91 @@
+import java.util.Scanner;
+
+public class AtaqueVigenere {
+
+    public static String descobrirChaveParcial(
+            String cifrado,
+            String palavra,
+            int posicao) {
+
+        StringBuilder chave = new StringBuilder();
+
+        for (int i = 0; i < palavra.length(); i++) {
+
+            char c = cifrado.charAt(posicao + i);
+            char p = palavra.charAt(i);
+
+            if (c < 'a' || c > 'z') {
+                return null;
+            }
+
+            int valorC = c - 'a';
+            int valorP = p - 'a';
+
+            int valorK = (valorC - valorP + 26) % 26;
+
+            chave.append((char) ('a' + valorK));
+        }
+
+        return chave.toString();
+    }
+
+    public static String decifrar(String texto, String chave) {
+
+        StringBuilder resultado = new StringBuilder();
+
+        int posicaoChave = 0;
+
+        for (int i = 0; i < texto.length(); i++) {
+
+            char c = texto.charAt(i);
+
+            if (c >= 'a' && c <= 'z') {
+
+                int valorC = c - 'a';
+                int valorK =
+                        chave.charAt(posicaoChave % chave.length()) - 'a';
+
+                int valorP = (valorC - valorK + 26) % 26;
+
+                resultado.append((char) ('a' + valorP));
+
+                posicaoChave++;
+
+            } else {
+                resultado.append(c);
+            }
+        }
+
+        return resultado.toString();
+    }
+
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Digite o texto cifrado: ");
+        String cifrado = scanner.nextLine().toLowerCase();
+
+        String palavra = "seguranca";
+
+        System.out.println("\nPossiveis chaves encontradas:");
+
+        for (int posicao = 0;
+             posicao <= cifrado.length() - palavra.length();
+             posicao++) {
+
+            String chaveParcial =
+                    descobrirChaveParcial(cifrado, palavra, posicao);
+
+            if (chaveParcial != null) {
+
+                System.out.println(
+                    "Posicao " + posicao +
+                    " -> " + chaveParcial
+                );
+            }
+        }
+
+        scanner.close();
+    }
+}
