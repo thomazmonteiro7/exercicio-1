@@ -1,0 +1,240 @@
+import java.security.MessageDigest;
+import java.util.*;
+import java.io.*;
+
+public class ObterColisoesParciais {
+
+    static MessageDigest md;
+
+    // Converte bytes para hexadecimal
+    public static String bytesParaHex(byte[] bytes) {
+
+        StringBuilder resultado = new StringBuilder();
+
+        for (byte b : bytes) {
+            resultado.append(String.format("%02x", b));
+        }
+
+        return resultado.toString();
+    }
+
+    // Retorna os últimos X bytes do hash
+    public static String ultimosBytes(byte[] hash, int quantidade) {
+
+        if (quantidade > hash.length) {
+            quantidade = hash.length;
+        }
+
+        StringBuilder resultado = new StringBuilder();
+
+        for (int i = hash.length - quantidade;
+             i < hash.length;
+             i++) {
+
+            resultado.append(
+                    String.format("%02x", hash[i])
+            );
+        }
+
+        return resultado.toString();
+    }
+
+    // Gera as strings ASCII
+    public static void gerarStrings(
+            String prefixo,
+            int tamanho,
+            int maxTamanho,
+            Map<String, String> hashes,
+            PrintWriter[] arquivos,
+            long[] contador,
+            long inicio,
+            int X) throws Exception {
+
+        if (tamanho > maxTamanho) {
+            return;
+        }
+
+        // Calcula hash da string atual
+        byte[] hash = md.digest(prefixo.getBytes("US-ASCII"));
+
+        contador[0]++;
+
+        // Testa colisões de 1 até 16 bytes
+        for (int n = 1; n <= 16 && n <= hash.length; n++) {
+
+            String parcial =
+                    ultimosBytes(hash, n);
+
+            String anterior = hashes.get(n + ":" + parcial);
+
+            if (anterior != null &&
+                !anterior.equals(prefixo)) {
+
+                arquivos[n - 1].println(
+                        "Colisão de " + n + " bytes:"
+                );
+
+                arquivos[n - 1].println(
+                        anterior + " -> " +
+                        ultimosBytes(
+                                md.digest(
+                                    anterior.getBytes("US-ASCII")
+                                ), n
+                        )
+                );
+
+                arquivos[n - 1].println(
+                        prefixo + " -> " + parcial
+                );
+
+                arquivos[n - 1].println();
+            }
+
+            hashes.put(
+                    n + ":" + parcial,
+                    prefixo
+            );
+        }
+
+        // Próximo caractere ASCII
+        for (int c = 32; c <= 126; c++) {
+
+            gerarStrings(
+                    prefixo + (char) c,
+                    tamanho + 1,
+                    maxTamanho,
+                    hashes,
+                    arquivos,
+                    contador,
+                    inicio,
+                    X
+            );
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println(
+                "=== COLISOES PARCIAIS DE HASH ==="
+        );
+
+        System.out.print(
+                "Digite X (quantidade minima de bytes): "
+        );
+
+        int X = scanner.nextInt();
+
+        scanner.nextLine();
+
+        System.out.print(
+                "Digite o algoritmo (MD5 ou SHA-256): "
+        );
+
+        String algoritmo =
+                scanner.nextLine().toUpperCase();
+
+        if (!algoritmo.equals("MD5") &&
+            !algoritmo.equals("SHA-256")) {
+
+            System.out.println(
+                    "Algoritmo invalido."
+            );
+
+            return;
+        }
+
+        md = MessageDigest.getInstance(algoritmo);
+
+        int tamanhoHash = md.getDigestLength();
+
+        System.out.println(
+                "\nTamanho do hash: " +
+                tamanhoHash +
+                " bytes"
+        );
+
+        PrintWriter[] arquivos =
+                new PrintWriter[16];
+
+        for (int i = 0; i < 16; i++) {
+
+            arquivos[i] =
+                    new PrintWriter(
+                        new FileWriter(
+                            "colisoes" +
+                            (i + 1) +
+                            "bytes.txt"
+                        )
+                    );
+        }
+
+        Map<String, String> hashes =
+                new HashMap<>();
+
+        long[] contador = {0};
+
+        long inicio =
+                System.currentTimeMillis();
+
+        System.out.println(
+                "\nIniciando busca..."
+        );
+
+        // Gera strings ASCII de 1 até 8 caracteres
+        gerarStrings(
+                "",
+                1,
+                8,
+                hashes,
+                arquivos,
+                contador,
+                inicio,
+                X
+        );
+
+        long fim =
+                System.currentTimeMillis();
+
+        for (PrintWriter arquivo : arquivos) {
+            arquivo.close();
+        }
+
+        double segundos =
+                (fim - inicio) / 1000.0;
+
+        double porMinuto =
+                contador[0] /
+                segundos *
+                60.0;
+
+        System.out.println(
+                "\n=== RESULTADO ==="
+        );
+
+        System.out.println(
+                "Strings analisadas: " +
+                contador[0]
+        );
+
+        System.out.println(
+                "Tempo: " +
+                segundos +
+                " segundos"
+        );
+
+        System.out.println(
+                "Strings processadas por minuto: " +
+                porMinuto
+        );
+
+        System.out.println(
+                "Colisao minima solicitada: " +
+                X +
+                " bytes"
+        );
+
+        scanner.close();
+    }
+}
