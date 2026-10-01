@@ -1,0 +1,94 @@
+import java.util.Scanner;
+
+public class Vigenere {
+
+    // Cifra uma mensagem
+    public static String cifrar(String texto, String chave) {
+        StringBuilder resultado = new StringBuilder();
+
+        texto = texto.toLowerCase();
+        chave = chave.toLowerCase();
+
+        int posicaoChave = 0;
+
+        for (int i = 0; i < texto.length(); i++) {
+
+            char c = texto.charAt(i);
+
+            if (c >= 'a' && c <= 'z') {
+
+                int valorTexto = c - 'a';
+                int valorChave = chave.charAt(posicaoChave % chave.length()) - 'a';
+
+                int novoValor = (valorTexto + valorChave) % 26;
+
+                resultado.append((char) ('a' + novoValor));
+
+                posicaoChave++;
+            } else {
+                // Mantém espaços e outros caracteres
+                resultado.append(c);
+            }
+        }
+
+        return resultado.toString();
+    }
+
+    // Decifra uma mensagem
+    public static String decifrar(String texto, String chave) {
+        StringBuilder resultado = new StringBuilder();
+
+        texto = texto.toLowerCase();
+        chave = chave.toLowerCase();
+
+        int posicaoChave = 0;
+
+        for (int i = 0; i < texto.length(); i++) {
+
+            char c = texto.charAt(i);
+
+            if (c >= 'a' && c <= 'z') {
+
+                int valorTexto = c - 'a';
+                int valorChave = chave.charAt(posicaoChave % chave.length()) - 'a';
+
+                int novoValor = (valorTexto - valorChave + 26) % 26;
+
+                resultado.append((char) ('a' + novoValor));
+
+                posicaoChave++;
+            } else {
+                resultado.append(c);
+            }
+        }
+
+        return resultado.toString();
+    }
+
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("=== CIFRA DE VIGENERE ===");
+
+        System.out.print("Digite a mensagem: ");
+        String mensagem = scanner.nextLine();
+
+        System.out.print("Digite a chave: ");
+        String chave = scanner.nextLine();
+
+        String cifrada = cifrar(mensagem, chave);
+        String decifrada = decifrar(cifrada, chave);
+
+        System.out.println("\nMensagem original:");
+        System.out.println(mensagem);
+
+        System.out.println("\nMensagem cifrada:");
+        System.out.println(cifrada);
+
+        System.out.println("\nMensagem decifrada:");
+        System.out.println(decifrada);
+
+        scanner.close();
+    }
+}
